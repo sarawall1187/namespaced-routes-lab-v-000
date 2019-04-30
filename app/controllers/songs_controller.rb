@@ -13,12 +13,15 @@ class SongsController < ApplicationController
   end
 
   def show
-    if params[:artist_id]
-      @artist = Artist.find_by(id: params[:artist_id])
+    if @artist = Artist.find_by(id: params[:artist_id])
       @song = @artist.songs.find_by(id: params[:id])
       if @song.nil?
-        redirect_to artist_songs_path(@artist), alert: "Song not found"
+        flash[:alert] = "Song not found"
+        redirect_to artist_songs_path(@artist)
       end
+    elsif params[:artist_id] #if its nested but not found 
+      redirect_to edit_song_path(params[:id])
+
     else
       @song = Song.find(params[:id])
     end
@@ -26,6 +29,10 @@ class SongsController < ApplicationController
 
   def new
     @song = Song.new
+    @preference = Preference.first
+    if @preference.allow_create_songs == false
+      redirect_to songs_path
+    end
   end
 
   def create
